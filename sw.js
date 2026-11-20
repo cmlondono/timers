@@ -1,5 +1,6 @@
 // Service worker: deja la app disponible sin conexión y gestiona los clics en notificaciones.
-const CACHE = 'labtimer-v2';
+const CACHE = 'labtimer-v3';
+const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 const ASSETS = [
   '/',
   '/index.html',
@@ -29,7 +30,10 @@ self.addEventListener('activate', (event) => {
 // Red primero para la página; caché + actualización en segundo plano para el resto.
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+  const isFont = FONT_HOSTS.includes(url.hostname);
+  if (url.origin !== self.location.origin && !isFont) return;
 
   if (request.mode === 'navigate') {
     event.respondWith(

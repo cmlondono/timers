@@ -89,6 +89,15 @@ export const TONES = {
       for (let i = 0; i < 3; i++) note(d, { freq: 440, start: t + i * 0.3, dur: 0.22, gain: 0.55, attack: 0.01 });
     },
   },
+  oink: {
+    label: 'Oink',
+    length: 1.3,
+    play(d, t) {
+      grunt(d, t, 230);
+      grunt(d, t + 0.3, 260);
+      grunt(d, t + 0.75, 210);
+    },
+  },
   ascendente: {
     label: 'Ascendente',
     length: 1.5,
@@ -97,6 +106,26 @@ export const TONES = {
     },
   },
 };
+
+// Gruñido corto: diente de sierra con caída de tono a través de un filtro pasabanda.
+function grunt(dest, start, freq) {
+  const osc = ctx.createOscillator();
+  const bp = ctx.createBiquadFilter();
+  const env = ctx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(freq, start);
+  osc.frequency.exponentialRampToValueAtTime(freq * 0.7, start + 0.22);
+  bp.type = 'bandpass';
+  bp.Q.value = 3;
+  bp.frequency.setValueAtTime(1200, start);
+  bp.frequency.exponentialRampToValueAtTime(700, start + 0.22);
+  env.gain.setValueAtTime(0.0001, start);
+  env.gain.exponentialRampToValueAtTime(0.9, start + 0.02);
+  env.gain.exponentialRampToValueAtTime(0.0001, start + 0.24);
+  osc.connect(bp).connect(env).connect(dest);
+  osc.start(start);
+  osc.stop(start + 0.3);
+}
 
 const toneOf = (id) => TONES[id] || TONES.campana;
 

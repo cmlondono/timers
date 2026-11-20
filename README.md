@@ -8,10 +8,11 @@ Biblioteca de temporizadores para laboratorio. Es una PWA estática (HTML, CSS y
 - **Varios timers a la vez:** pausar, reanudar, +1 min, reiniciar y quitar (con *Deshacer*).
 - **Número de prueba (opcional):** al iniciar un timer puedes escribir el número de prueba y ajustar el tiempo solo para esa ejecución. La app sugiere el siguiente número (12 → 13, M-009 → M-010).
 - **Inicio rápido:** el botón ▶ de cada timer lo arranca con su tiempo por defecto.
-- **6 tonos configurables** (Campana, Digital, Alarma, Suave, Pulso, Ascendente) generados con Web Audio, así que funcionan sin conexión. La alarma suena en bucle hasta que la detienes (máximo 5 min) y muestra el tiempo excedido (+00:12).
+- **7 tonos configurables** (Campana, Digital, Alarma, Suave, Pulso, Oink, Ascendente) generados con Web Audio, así que funcionan sin conexión. La alarma suena en bucle hasta que la detienes (máximo 5 min) y muestra el tiempo excedido (+00:12).
 - Vibración (Android), pantalla siempre encendida mientras hay timers corriendo y notificaciones en segundo plano.
 - Exportar e importar la biblioteca en formato JSON.
-- Funciona sin conexión, tiene tema claro u oscuro automático y diseño para móvil y escritorio.
+- **Tema Cerditos** (predeterminado): rosa pastel, con un cerdito animado que camina sobre la barra de cada timer, duerme en pausa y salta con corazones al sonar la alarma. También hay temas Claro, Oscuro y Automático en Ajustes.
+- Funciona sin conexión y tiene diseño para móvil y escritorio.
 
 ## Desplegar en Vercel
 

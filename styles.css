@@ -15,11 +15,15 @@
   --radius: 18px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --brand-grad: linear-gradient(160deg, #5a78ff, #3248d1);
+  --fab-shadow: 0 8px 24px rgb(59 91 219 / .4);
+  --toast-bg: #1b2030;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme]) {
     --bg: #0c0e13;
     --surface: #151922;
     --surface-2: #1c212b;
@@ -53,6 +57,42 @@
   color-scheme: dark;
 }
 
+/* ---------- Tema Cerditos ---------- */
+:root[data-theme="pig"] {
+  --bg: #fff4f8;
+  --surface: #ffffff;
+  --surface-2: #fff0f5;
+  --text: #4a2238;
+  --muted: #9b6b82;
+  --border: #f8d3e0;
+  --primary: #d64f86;
+  --primary-ink: #ffffff;
+  --primary-soft: #ffe1ec;
+  --danger: #e4476b;
+  --danger-soft: #ffe6ec;
+  --shadow: 0 1px 2px rgb(214 79 134 / 0.08), 0 6px 20px rgb(214 79 134 / 0.10);
+  --shadow-lg: 0 10px 40px rgb(120 30 70 / 0.20);
+  --radius: 22px;
+  --font: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --brand-grad: linear-gradient(160deg, #ffe1ec, #ffc2d8);
+  --fab-shadow: 0 8px 24px rgb(214 79 134 / .35);
+  --toast-bg: #4a2238;
+  color-scheme: light;
+}
+:root[data-theme="pig"] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='%23ffd3e2'%3E%3Cpath d='M30 44s-11-7-14.5-14A7.5 7.5 0 0 1 30 22a7.5 7.5 0 0 1 14.5 8C41 37 30 44 30 44z'/%3E%3Cpath d='M104 112s-7-4.5-9.3-9A4.8 4.8 0 0 1 104 98a4.8 4.8 0 0 1 9.3 5c-2.3 4.5-9.3 9-9.3 9z'/%3E%3Ccircle cx='112' cy='34' r='3'/%3E%3Ccircle cx='44' cy='108' r='2.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 140px 140px;
+}
+:root[data-theme="pig"] .timer,
+:root[data-theme="pig"] .preset,
+:root[data-theme="pig"] .swatch { --c: color-mix(in oklab, var(--c0) 55%, #ffd6e4); }
+:root[data-theme="pig"] .play-btn { background: color-mix(in oklab, var(--c) 45%, white); color: color-mix(in oklab, var(--c0) 70%, #4a2238); }
+:root[data-theme="pig"] .badge { color: #4a2238; background: color-mix(in oklab, var(--c) 40%, white); }
+:root[data-theme="pig"] .progress { height: 8px; }
+:root[data-theme="pig"] .section-head h2 { color: var(--primary); }
+
+.timer, .preset, .swatch { --c: var(--c0); }
+
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; touch-action: manipulation; }
 html:has(dialog[open]) { overflow: hidden; }
@@ -62,7 +102,7 @@ body {
   min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
-  font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font: 16px/1.45 var(--font);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -89,9 +129,13 @@ button { cursor: pointer; touch-action: manipulation; user-select: none; -webkit
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; letter-spacing: -0.01em; }
 .brand-mark {
   display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px;
-  background: linear-gradient(160deg, #5a78ff, #3248d1); color: #fff;
+  background: var(--brand-grad); color: #fff;
 }
-.brand-mark svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.brand-mark .mark-default { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.pig-face { display: none; }
+:root[data-theme="pig"] .mark-default, :root[data-theme="pig"] .empty-default { display: none; }
+:root[data-theme="pig"] .pig-face { display: block; }
+.brand-mark .pig-face { width: 30px; height: 30px; animation: pig-wiggle 4s ease-in-out infinite; transform-origin: 50% 80%; }
 .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
 /* ---------- Banner de alarma ---------- */
@@ -152,7 +196,7 @@ button { cursor: pointer; touch-action: manipulation; user-select: none; -webkit
   display: inline-flex; align-items: center; gap: 8px;
   height: 56px; padding: 0 22px 0 18px; border: 0; border-radius: 18px;
   background: var(--primary); color: var(--primary-ink);
-  font-weight: 650; font-size: 16px; box-shadow: 0 8px 24px rgb(59 91 219 / .4);
+  font-weight: 650; font-size: 16px; box-shadow: var(--fab-shadow);
   transition: transform .12s;
 }
 .fab:active { transform: scale(.96); }
@@ -194,6 +238,36 @@ button { cursor: pointer; touch-action: manipulation; user-select: none; -webkit
 .timer.is-ringing .timer-time { color: var(--danger); }
 .timer.is-ringing .progress span { background: var(--danger); }
 
+/* Cerdito caminando (solo en tema Cerditos) */
+.pig-track { display: none; }
+:root[data-theme="pig"] .pig-track { display: block; position: relative; height: 34px; margin: 2px 0 0; }
+.walker {
+  position: absolute; bottom: -3px; left: calc(var(--p, 0) * (100% - 46px)); width: 46px;
+  transition: left .25s linear;
+}
+.walker svg { display: block; width: 46px; height: 34px; overflow: visible; }
+.walker .leg { transform-box: fill-box; transform-origin: 50% 0; }
+.walker .eye-closed, .walker .zz, .walker .hearts { display: none; }
+.is-running .walker svg { animation: pig-bob .42s ease-in-out infinite alternate; }
+.is-running .walker .leg-a { animation: pig-leg .42s ease-in-out infinite alternate; }
+.is-running .walker .leg-b { animation: pig-leg .42s ease-in-out infinite alternate-reverse; }
+.is-running .walker .tail { animation: pig-tail .6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 100% 50%; }
+.is-paused .walker .eye-open, .is-done:not(.is-ringing) .walker .eye-open { display: none; }
+.is-paused .walker .eye-closed, .is-done:not(.is-ringing) .walker .eye-closed { display: inline; }
+.is-paused .walker .zz {
+  display: block; position: absolute; top: -12px; right: -2px; font-size: 13px; font-weight: 800; color: var(--muted);
+  animation: pig-zz 2s ease-in-out infinite;
+}
+.is-ringing .walker svg { animation: pig-hop .5s ease-in-out infinite; }
+.is-ringing .walker .hearts { display: block; }
+.hearts i {
+  position: absolute; bottom: 24px; font-style: normal; font-size: 14px; color: #ff6f9f; opacity: 0;
+  animation: pig-heart 1.5s ease-out infinite;
+}
+.hearts i:nth-child(1) { left: 4px; }
+.hearts i:nth-child(2) { left: 18px; animation-delay: .5s; font-size: 11px; }
+.hearts i:nth-child(3) { left: 30px; animation-delay: 1s; }
+
 /* ---------- Biblioteca ---------- */
 .search {
   display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
@@ -231,7 +305,9 @@ button { cursor: pointer; touch-action: manipulation; user-select: none; -webkit
 
 .empty { text-align: center; padding: 40px 20px; border-radius: var(--radius); background: var(--surface); border: 1px dashed var(--border); }
 .empty-art { display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 20px; background: var(--primary-soft); color: var(--primary); }
-.empty-art svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.empty-art .empty-default { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.empty-art .pig-face { width: 64px; height: 64px; animation: pig-bounce 1.6s ease-in-out infinite; }
+:root[data-theme="pig"] .empty-art { width: 96px; height: 96px; border-radius: 32px; }
 .empty h3 { margin: 16px 0 6px; font-size: 18px; }
 .empty p { margin: 0 auto 20px; max-width: 360px; color: var(--muted); font-size: 15px; }
 
@@ -338,9 +414,9 @@ dialog.sheet::backdrop { background: rgb(8 10 15 / .45); backdrop-filter: blur(2
 .hint { margin: 8px 2px 0; font-size: 13px; color: var(--muted); }
 .about { text-align: center; color: var(--muted); font-size: 13px; margin: 8px 0 4px; }
 
-.segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); }
+.segmented { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); }
 .segmented button {
-  height: 40px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font-weight: 600; font-size: 15px;
+  height: 40px; padding: 0 2px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font-weight: 600; font-size: 14px;
   transition: background-color .15s, color .15s;
 }
 .segmented button[aria-checked="true"] { background: var(--primary); color: var(--primary-ink); box-shadow: var(--shadow); }
@@ -367,19 +443,27 @@ dialog.sheet::backdrop { background: rgb(8 10 15 / .45); backdrop-filter: blur(2
   position: fixed; left: 50%; bottom: calc(88px + var(--safe-b)); z-index: 50;
   display: flex; align-items: center; gap: 14px; max-width: calc(100vw - 32px);
   padding: 12px 14px 12px 16px; border-radius: 14px;
-  background: #1b2030; color: #fff; font-size: 15px; box-shadow: var(--shadow-lg);
+  background: var(--toast-bg); color: #fff; font-size: 15px; box-shadow: var(--shadow-lg);
   transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: transform .2s, opacity .2s;
 }
 .toast.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
 .toast-btn { border: 0; background: none; color: #9db0ff; font-weight: 700; padding: 4px; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .toast { background: #e8ebf1; color: #0f172a; }
-  :root:not([data-theme="light"]) .toast-btn { color: var(--primary); }
+  :root:not([data-theme]) .toast { background: #e8ebf1; color: #0f172a; }
+  :root:not([data-theme]) .toast-btn { color: var(--primary); }
 }
 :root[data-theme="dark"] .toast { background: #e8ebf1; color: #0f172a; }
 :root[data-theme="dark"] .toast-btn { color: var(--primary); }
 
 /* ---------- Animaciones ---------- */
+@keyframes pig-bob { from { transform: translateY(0); } to { transform: translateY(-2px); } }
+@keyframes pig-leg { from { transform: rotate(20deg); } to { transform: rotate(-20deg); } }
+@keyframes pig-tail { from { transform: rotate(-15deg); } to { transform: rotate(20deg); } }
+@keyframes pig-hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-9px) rotate(-4deg); } }
+@keyframes pig-zz { 0% { transform: translate(0, 4px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(6px, -8px); opacity: 0; } }
+@keyframes pig-heart { 0% { transform: translateY(0) scale(.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-22px) scale(1.1); opacity: 0; } }
+@keyframes pig-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes pig-wiggle { 0%, 88%, 100% { transform: rotate(0); } 92% { transform: rotate(-8deg); } 96% { transform: rotate(8deg); } }
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes pop { from { transform: scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes drop-in { from { transform: translateY(-8px); opacity: 0; } to { transform: none; opacity: 1; } }

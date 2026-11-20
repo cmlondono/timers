@@ -1,8 +1,8 @@
 import { TONES, unlockAudio, previewTone, startRing, stopRing, setVolume } from './sounds.js';
 
-const COLORS = ['#3b82f6', '#14b8a6', '#22c55e', '#f59e0b', '#f97316', '#ef4444', '#ec4899', '#8b5cf6', '#64748b'];
+const COLORS = ['#ec4899', '#f472b6', '#8b5cf6', '#3b82f6', '#14b8a6', '#22c55e', '#f59e0b', '#f97316', '#ef4444', '#64748b'];
 const QUICK = [30, 60, 120, 300, 600, 900, 1800, 3600];
-const DEFAULT_SETTINGS = { defaultTone: 'campana', volume: 0.8, vibrate: true, wakeLock: true, theme: 'auto' };
+const DEFAULT_SETTINGS = { defaultTone: 'campana', volume: 0.8, vibrate: true, wakeLock: true, theme: 'pig' };
 const RING_MAX_MS = 5 * 60 * 1000; // la alarma deja de sonar sola tras 5 min
 
 // ---------- Persistencia ----------
@@ -76,6 +76,9 @@ const ICONS = {
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
 };
+// Cerdito de perfil que camina sobre la barra de progreso (tema Cerditos).
+const PIG_WALKER = `<div class="pig-track" aria-hidden="true"><div class="walker"><svg viewBox="0 0 48 36"><path class="tail" d="M7.5 15c-4 0-4-5 0-4s1 5-2 5" fill="none" stroke="#f27fa8" stroke-width="1.8" stroke-linecap="round"/><rect class="leg leg-b" x="10" y="22" width="4.5" height="10" rx="2.2" fill="#f59ab9"/><rect class="leg leg-a" x="15.5" y="22" width="4.5" height="10" rx="2.2" fill="#f59ab9"/><rect class="leg leg-a" x="24" y="22" width="4.5" height="10" rx="2.2" fill="#f59ab9"/><rect class="leg leg-b" x="29.5" y="22" width="4.5" height="10" rx="2.2" fill="#f59ab9"/><ellipse cx="21" cy="18" rx="14" ry="10" fill="#ffc9db"/><circle cx="34" cy="14" r="9" fill="#ffc9db"/><path d="M29 7 31 1l5 5z" fill="#f59ab9" stroke="#f59ab9" stroke-linejoin="round"/><circle cx="34.5" cy="18.5" r="2.2" fill="#ff8fb3" opacity=".6"/><circle class="eye-open" cx="36" cy="12" r="1.5" fill="#4a2238"/><path class="eye-closed" d="M34.6 12.2q1.4 1.3 2.8 0" fill="none" stroke="#4a2238" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="42" cy="16" rx="4" ry="3.4" fill="#ff9fbf"/><ellipse cx="41" cy="16" rx=".8" ry="1.2" fill="#c2446f"/><ellipse cx="43.2" cy="16" rx=".8" ry="1.2" fill="#c2446f"/></svg><span class="zz">z</span><span class="hearts"><i>♥</i><i>♥</i><i>♥</i></span></div></div>`;
+
 const ic = (name) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 
 // ---------- Elementos ----------
@@ -257,7 +260,7 @@ function renderActive() {
   const running = list.filter((t) => t.state === 'running').length;
   els.activeCount.textContent = running ? `${running} corriendo` : `${list.length}`;
   els.activeList.innerHTML = list.map((t) => `
-    <article class="timer is-${t.state}${isRinging(t) ? ' is-ringing' : ''}" data-id="${t.id}" style="--c:${t.color}">
+    <article class="timer is-${t.state}${isRinging(t) ? ' is-ringing' : ''}" data-id="${t.id}" style="--c0:${t.color};--p:${progress(t, now)}">
       <div class="timer-head">
         <div class="timer-title">
           <span class="timer-name">${esc(t.name)}</span>
@@ -266,6 +269,7 @@ function renderActive() {
         <span class="timer-status">${statusText(t)}</span>
       </div>
       <div class="timer-time" data-time>${timeText(t, now)}</div>
+      ${PIG_WALKER}
       <div class="progress"><span data-bar style="transform:scaleX(${progress(t, now)})"></span></div>
       <div class="timer-actions">${actionsFor(t)}</div>
     </article>`).join('');
@@ -278,7 +282,9 @@ function updateTimes(now) {
     const timeEl = card.querySelector('[data-time]');
     const text = timeText(t, now);
     if (timeEl.textContent !== text) timeEl.textContent = text;
-    card.querySelector('[data-bar]').style.transform = `scaleX(${progress(t, now)})`;
+    const p = progress(t, now);
+    card.querySelector('[data-bar]').style.transform = `scaleX(${p})`;
+    card.style.setProperty('--p', p);
   }
 }
 
@@ -418,7 +424,7 @@ function renderLibrary() {
     return;
   }
   els.library.innerHTML = items.map((p) => `
-    <article class="preset" data-id="${p.id}" style="--c:${p.color}">
+    <article class="preset" data-id="${p.id}" style="--c0:${p.color}">
       <button type="button" class="preset-main" data-action="open" aria-label="Usar ${esc(p.name)}">
         <span class="preset-name">${esc(p.name)}</span>
         <span class="preset-meta">
@@ -529,7 +535,7 @@ function renderToneList() {
 
 function renderColorList() {
   $('#colorList').innerHTML = COLORS.map((c) => `
-    <button type="button" class="swatch" role="radio" aria-checked="${c === draftColor}" aria-label="Color ${c}" data-color="${c}" style="--c:${c}"></button>`).join('');
+    <button type="button" class="swatch" role="radio" aria-checked="${c === draftColor}" aria-label="Color ${c}" data-color="${c}" style="--c0:${c}"></button>`).join('');
 }
 
 $('#toneList').addEventListener('click', (e) => {
@@ -629,7 +635,7 @@ function applyTheme() {
   if (theme === 'auto') delete root.dataset.theme;
   else root.dataset.theme = theme;
   const dark = theme === 'dark' || (theme === 'auto' && darkQuery.matches);
-  $('meta[name="theme-color"]').content = dark ? '#0c0e13' : '#f3f4f7';
+  $('meta[name="theme-color"]').content = theme === 'pig' ? '#fff4f8' : dark ? '#0c0e13' : '#f3f4f7';
   document.querySelectorAll('[data-theme-opt]').forEach((b) => {
     b.setAttribute('aria-checked', String(b.dataset.themeOpt === theme));
   });
@@ -750,6 +756,12 @@ els.installBtn.addEventListener('click', async () => {
 });
 
 // ---------- Arranque ----------
+// Activa el tema Cerditos una sola vez para quienes ya tenían otro tema guardado.
+if (!state.settings.pigIntro) {
+  state.settings.theme = 'pig';
+  state.settings.pigIntro = true;
+  saveSettings();
+}
 applyTheme();
 // iOS ignora user-scalable=no: bloquear el gesto de pellizcar para que no haga zoom.
 document.addEventListener('gesturestart', (e) => e.preventDefault());
