@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>LabTimer</title>
+  <meta name="description" content="Biblioteca de temporizadores para laboratorio. Crea, guarda y ejecuta varios timers a la vez.">
+  <meta name="theme-color" content="#f3f4f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c0e13" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="LabTimer">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 1.5"/><path d="M10 2.5h4"/><path d="M12 2.5V6"/></svg>
+      </span>
+      <span class="brand-name">LabTimer</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="installBtn" class="btn btn-soft btn-sm" type="button" hidden>Instalar</button>
+      <button id="settingsBtn" class="icon-btn" type="button" aria-label="Ajustes"></button>
+    </div>
+  </header>
+
+  <div id="alarmBanner" class="alarm-banner" role="alert" hidden>
+    <span class="alarm-dot" aria-hidden="true"></span>
+    <span id="alarmText" class="alarm-text"></span>
+    <button id="alarmStopAll" class="btn btn-sm btn-on-danger" type="button">Detener</button>
+  </div>
+
+  <main class="container">
+    <section id="activeSection" class="section" hidden>
+      <div class="section-head">
+        <h2>En curso</h2>
+        <span id="activeCount" class="pill"></span>
+      </div>
+      <div id="activeList" class="active-list"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Biblioteca</h2>
+        <span id="libraryCount" class="pill"></span>
+      </div>
+      <label id="searchWrap" class="search" hidden>
+        <span id="searchIcon" aria-hidden="true"></span>
+        <input id="search" type="search" placeholder="Buscar timer…" autocomplete="off" aria-label="Buscar timer">
+      </label>
+      <div id="library" class="library"></div>
+      <div id="libraryEmpty" class="empty" hidden>
+        <div class="empty-art" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 1.5"/><path d="M10 2.5h4"/><path d="M12 2.5V6"/></svg>
+        </div>
+        <h3>Tu biblioteca está vacía</h3>
+        <p>Crea un timer con nombre y tiempo. Quedará guardado para usarlo cuando lo necesites, incluso varios a la vez.</p>
+        <button id="emptyNewBtn" class="btn btn-primary" type="button">Crear mi primer timer</button>
+      </div>
+    </section>
+  </main>
+
+  <button id="newBtn" class="fab" type="button" aria-label="Nuevo timer"></button>
+
+  <!-- Iniciar timer -->
+  <dialog id="startDialog" class="sheet" aria-labelledby="startTitle">
+    <form id="startForm" class="sheet-inner" novalidate>
+      <header class="sheet-head">
+        <div>
+          <p class="eyebrow">Iniciar timer</p>
+          <h3 id="startTitle"></h3>
+          <p id="startMeta" class="sheet-sub"></p>
+        </div>
+        <button type="button" class="icon-btn" data-close aria-label="Cerrar"></button>
+      </header>
+      <div class="sheet-body">
+        <div class="field">
+          <label class="label" for="testNo">Número de prueba <span class="opt">opcional</span></label>
+          <input id="testNo" class="input" type="text" inputmode="text" maxlength="24" placeholder="Ej. 12" autocomplete="off" enterkeyhint="go">
+          <div id="testSuggest" class="chips"></div>
+        </div>
+        <div class="field">
+          <div class="label-row">
+            <span class="label">Tiempo</span>
+            <button id="startResetTime" type="button" class="link-btn" hidden></button>
+          </div>
+          <div id="startDuration"></div>
+        </div>
+      </div>
+      <footer class="sheet-foot">
+        <button id="startSubmit" type="submit" class="btn btn-primary btn-lg btn-block"></button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Crear / editar timer -->
+  <dialog id="presetDialog" class="sheet" aria-labelledby="presetTitle">
+    <form id="presetForm" class="sheet-inner" novalidate>
+      <header class="sheet-head">
+        <div>
+          <p class="eyebrow">Biblioteca</p>
+          <h3 id="presetTitle">Nuevo timer</h3>
+        </div>
+        <button type="button" class="icon-btn" data-close aria-label="Cerrar"></button>
+      </header>
+      <div class="sheet-body">
+        <div class="field" id="fieldName">
+          <label class="label" for="presetName">Nombre</label>
+          <input id="presetName" class="input" type="text" maxlength="40" placeholder="Ej. Centrifugado muestra A" autocomplete="off" enterkeyhint="done">
+          <p class="field-error" hidden></p>
+        </div>
+        <div class="field" id="fieldDuration">
+          <span class="label">Tiempo</span>
+          <div id="presetDuration"></div>
+          <div id="presetChips" class="chips"></div>
+          <p class="field-error" hidden></p>
+        </div>
+        <div class="field">
+          <span class="label">Sonido al finalizar</span>
+          <div id="toneList" class="tone-list" role="radiogroup" aria-label="Sonido"></div>
+        </div>
+        <div class="field">
+          <span class="label">Color</span>
+          <div id="colorList" class="swatches" role="radiogroup" aria-label="Color"></div>
+        </div>
+      </div>
+      <footer class="sheet-foot">
+        <button id="presetDelete" type="button" class="btn btn-ghost-danger" hidden>Eliminar</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-soft" data-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Ajustes -->
+  <dialog id="settingsDialog" class="sheet" aria-labelledby="settingsTitle">
+    <div class="sheet-inner">
+      <header class="sheet-head">
+        <div>
+          <p class="eyebrow">LabTimer</p>
+          <h3 id="settingsTitle">Ajustes</h3>
+        </div>
+        <button type="button" class="icon-btn" data-close aria-label="Cerrar"></button>
+      </header>
+      <div class="sheet-body">
+        <div class="group">
+          <p class="group-title">Sonido</p>
+          <div class="row">
+            <label for="setTone">Tono para timers nuevos</label>
+            <select id="setTone" class="select"></select>
+          </div>
+          <div class="row row-stack">
+            <div class="row-line">
+              <label for="setVolume">Volumen</label>
+              <button id="testSound" type="button" class="btn btn-soft btn-sm">Probar</button>
+            </div>
+            <input id="setVolume" class="range" type="range" min="0" max="1" step="0.05">
+          </div>
+          <p class="hint">En iPhone, sube el volumen del dispositivo. Si el sonido no se oye, desactiva el modo silencio.</p>
+        </div>
+
+        <div class="group">
+          <p class="group-title">Durante la alarma</p>
+          <label class="row">
+            <span>Vibración <small class="muted">(Android)</small></span>
+            <input id="setVibrate" class="switch" type="checkbox">
+          </label>
+          <label class="row">
+            <span>Mantener pantalla encendida<br><small class="muted">Mientras haya timers corriendo</small></span>
+            <input id="setWake" class="switch" type="checkbox">
+          </label>
+        </div>
+
+        <div class="group">
+          <p class="group-title">Notificaciones</p>
+          <div class="row">
+            <span id="notifStatus"></span>
+            <button id="notifBtn" type="button" class="btn btn-soft btn-sm">Activar</button>
+          </div>
+          <p class="hint">Avisan cuando un timer termina con la app en segundo plano. Para máxima fiabilidad, deja la app abierta con la pantalla encendida.</p>
+        </div>
+
+        <div class="group">
+          <p class="group-title">Datos</p>
+          <div class="row">
+            <span>Copia de la biblioteca</span>
+            <span class="row-btns">
+              <button id="exportBtn" type="button" class="btn btn-soft btn-sm">Exportar</button>
+              <button id="importBtn" type="button" class="btn btn-soft btn-sm">Importar</button>
+            </span>
+          </div>
+          <input id="importFile" type="file" accept="application/json,.json" hidden>
+          <p class="hint">Los timers se guardan solo en este dispositivo. Exporta para pasarlos a otro teléfono.</p>
+        </div>
+
+        <p class="about">LabTimer · v1.0</p>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Instalar en iPhone -->
+  <dialog id="installDialog" class="sheet" aria-labelledby="installTitle">
+    <div class="sheet-inner">
+      <header class="sheet-head">
+        <div>
+          <p class="eyebrow">Instalar</p>
+          <h3 id="installTitle">Agregar a la pantalla de inicio</h3>
+        </div>
+        <button type="button" class="icon-btn" data-close aria-label="Cerrar"></button>
+      </header>
+      <div class="sheet-body">
+        <ol class="steps">
+          <li>Abre esta página en <strong>Safari</strong>.</li>
+          <li>Toca el botón <strong>Compartir</strong> (el cuadrado con la flecha hacia arriba).</li>
+          <li>Elige <strong>Agregar a inicio</strong> y confirma con <strong>Agregar</strong>.</li>
+        </ol>
+        <p class="hint">LabTimer se abrirá a pantalla completa como una app y funcionará sin conexión.</p>
+      </div>
+      <footer class="sheet-foot">
+        <button type="button" class="btn btn-primary btn-block" data-close>Entendido</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
