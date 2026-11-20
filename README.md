@@ -11,7 +11,7 @@ Biblioteca de temporizadores para laboratorio. Es una PWA estática (HTML, CSS y
 - **7 tonos configurables** (Campana, Digital, Alarma, Suave, Pulso, Oink, Ascendente) generados con Web Audio, así que funcionan sin conexión. La alarma suena en bucle hasta que la detienes (máximo 5 min) y muestra el tiempo excedido (+00:12).
 - Vibración (Android), pantalla siempre encendida mientras hay timers corriendo y notificaciones en segundo plano.
 - Exportar e importar la biblioteca en formato JSON.
-- **Tema Cerditos** (predeterminado): rosa pastel, con un cerdito animado que camina sobre la barra de cada timer, duerme en pausa y salta con corazones al sonar la alarma. También hay temas Claro, Oscuro y Automático en Ajustes.
+- **Diseño rosa con cerditos animados:** un cerdito camina sobre la barra de cada timer, duerme (zzz) en pausa y salta con un despertador y corazones al sonar la alarma. Temas *Rosa claro*, *Rosa noche* y *Automático* en Ajustes.
 - Funciona sin conexión y tiene diseño para móvil y escritorio.
 
 ## Desplegar en Vercel
@@ -45,6 +45,10 @@ Una web app no puede programar alarmas del sistema. Si la pantalla se bloquea o 
 
 Sirve la carpeta con cualquier servidor estático, por ejemplo `npx serve .`, y abre `http://localhost:3000`.
 
-Para regenerar los iconos ejecuta `node scripts/gen-icons.mjs`.
+Para regenerar las imágenes animadas (`img/`) y los iconos (`icons/`) ejecuta `bash scripts/build-assets.sh` (requiere `curl` y `ffmpeg`).
 
 Si cambias archivos de la app, sube la versión de `CACHE` en `sw.js` para que los usuarios instalados reciban la actualización de inmediato.
+
+## Créditos
+
+Los cerditos, corazones y relojes animados son [Fluent Emoji animados de Microsoft](https://github.com/microsoft/fluentui-emoji-animated) (licencia MIT), convertidos a WebP animado de 128 px para que pesen menos.

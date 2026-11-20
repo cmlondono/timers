@@ -1,8 +1,10 @@
 import { TONES, unlockAudio, previewTone, startRing, stopRing, setVolume } from './sounds.js';
 
-const COLORS = ['#ec4899', '#f472b6', '#8b5cf6', '#3b82f6', '#14b8a6', '#22c55e', '#f59e0b', '#f97316', '#ef4444', '#64748b'];
+// Paleta rosa: rosas, fucsias, lilas y corales (se muestran suavizados en tono pastel).
+const COLORS = ['#ec4899', '#f472b6', '#db2777', '#fb7185', '#e879f9', '#c084fc', '#a78bfa', '#f9a8d4', '#fda4af', '#be185d'];
+const OLD_COLORS = ['#3b82f6', '#14b8a6', '#22c55e', '#f59e0b', '#f97316', '#ef4444', '#ec4899', '#8b5cf6', '#64748b', '#f472b6'];
 const QUICK = [30, 60, 120, 300, 600, 900, 1800, 3600];
-const DEFAULT_SETTINGS = { defaultTone: 'campana', volume: 0.8, vibrate: true, wakeLock: true, theme: 'pig' };
+const DEFAULT_SETTINGS = { defaultTone: 'campana', volume: 0.8, vibrate: true, wakeLock: true, theme: 'light' };
 const RING_MAX_MS = 5 * 60 * 1000; // la alarma deja de sonar sola tras 5 min
 
 // ---------- Persistencia ----------
@@ -76,8 +78,11 @@ const ICONS = {
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
 };
-// Cerdito de perfil que camina sobre la barra de progreso (tema Cerditos).
-const PIG_WALKER = `<div class="pig-track" aria-hidden="true"><div class="walker"><svg viewBox="0 0 48 36"><path class="tail" d="M7.5 15c-4 0-4-5 0-4s1 5-2 5" fill="none" stroke="#f27fa8" stroke-width="1.8" stroke-linecap="round"/><rect class="leg leg-b" x="10" y="22" width="4.5" height="10" rx="2.2" fill="#f59ab9"/><rect class="leg leg-a" x="15.5" y="22" width="4.5" height="10" rx="2.2" fill="#f59ab9"/><rect class="leg leg-a" x="24" y="22" width="4.5" height="10" rx="2.2" fill="#f59ab9"/><rect class="leg leg-b" x="29.5" y="22" width="4.5" height="10" rx="2.2" fill="#f59ab9"/><ellipse cx="21" cy="18" rx="14" ry="10" fill="#ffc9db"/><circle cx="34" cy="14" r="9" fill="#ffc9db"/><path d="M29 7 31 1l5 5z" fill="#f59ab9" stroke="#f59ab9" stroke-linejoin="round"/><circle cx="34.5" cy="18.5" r="2.2" fill="#ff8fb3" opacity=".6"/><circle class="eye-open" cx="36" cy="12" r="1.5" fill="#4a2238"/><path class="eye-closed" d="M34.6 12.2q1.4 1.3 2.8 0" fill="none" stroke="#4a2238" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="42" cy="16" rx="4" ry="3.4" fill="#ff9fbf"/><ellipse cx="41" cy="16" rx=".8" ry="1.2" fill="#c2446f"/><ellipse cx="43.2" cy="16" rx=".8" ry="1.2" fill="#c2446f"/></svg><span class="zz">z</span><span class="hearts"><i>♥</i><i>♥</i><i>♥</i></span></div></div>`;
+// Imágenes animadas (Fluent Emoji de Microsoft, licencia MIT).
+const emoji = (name, size, cls = '') => `<img class="emoji ${cls}" src="/img/${name}.webp" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`;
+
+// Cerdito que avanza sobre la barra de progreso; las burbujas cambian según el estado.
+const PIG_WALKER = `<div class="pig-track" aria-hidden="true"><div class="walker">${emoji('pig', 56, 'pig')}${emoji('zzz', 30, 'bubble bubble-zzz')}${emoji('alarm_clock', 36, 'bubble bubble-alarm')}${emoji('two_hearts', 30, 'bubble bubble-hearts')}${emoji('sparkling_heart', 30, 'bubble bubble-done')}</div></div>`;
 
 const ic = (name) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 
@@ -105,7 +110,6 @@ const els = {
 
 // Iconos estáticos
 $('#settingsBtn').innerHTML = ic('sliders');
-$('#newBtn').innerHTML = `${ic('plus')}<span>Nuevo timer</span>`;
 $('#searchIcon').innerHTML = ic('search');
 $('#startSubmit').innerHTML = `${ic('play')} Iniciar`;
 document.querySelectorAll('[data-close].icon-btn').forEach((b) => { b.innerHTML = ic('x'); });
@@ -122,7 +126,7 @@ document.querySelectorAll('dialog.sheet').forEach((d) => {
 let toastTimer;
 function hideToast() { els.toast.classList.remove('show'); }
 function toast(message, action) {
-  els.toast.innerHTML = `<span>${esc(message)}</span>${action ? `<button type="button" class="toast-btn">${esc(action.label)}</button>` : ''}`;
+  els.toast.innerHTML = `${emoji(action ? 'pig_face' : 'sparkling_heart', 30)}<span>${esc(message)}</span>${action ? `<button type="button" class="toast-btn">${esc(action.label)}</button>` : ''}`;
   if (action) els.toast.querySelector('button').onclick = () => { action.fn(); hideToast(); };
   els.toast.classList.add('show');
   clearTimeout(toastTimer);
@@ -425,6 +429,7 @@ function renderLibrary() {
   }
   els.library.innerHTML = items.map((p) => `
     <article class="preset" data-id="${p.id}" style="--c0:${p.color}">
+      <span class="preset-avatar">${emoji('pig_face', 40)}</span>
       <button type="button" class="preset-main" data-action="open" aria-label="Usar ${esc(p.name)}">
         <span class="preset-name">${esc(p.name)}</span>
         <span class="preset-meta">
@@ -439,11 +444,12 @@ function renderLibrary() {
 }
 
 els.library.addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-action]');
-  if (!btn) return;
-  const p = state.library.find((x) => x.id === btn.closest('.preset').dataset.id);
+  const card = e.target.closest('.preset');
+  if (!card) return;
+  const p = state.library.find((x) => x.id === card.dataset.id);
   if (!p) return;
-  if (btn.dataset.action === 'open') openStart(p);
+  const btn = e.target.closest('[data-action]');
+  if (!btn || btn.dataset.action === 'open') openStart(p);
   else if (btn.dataset.action === 'quick') launch(p, p.duration, '');
   else if (btn.dataset.action === 'edit') openPreset(p);
 });
@@ -635,7 +641,7 @@ function applyTheme() {
   if (theme === 'auto') delete root.dataset.theme;
   else root.dataset.theme = theme;
   const dark = theme === 'dark' || (theme === 'auto' && darkQuery.matches);
-  $('meta[name="theme-color"]').content = theme === 'pig' ? '#fff4f8' : dark ? '#0c0e13' : '#f3f4f7';
+  $('meta[name="theme-color"]').content = dark ? '#1c1117' : '#fff4f8';
   document.querySelectorAll('[data-theme-opt]').forEach((b) => {
     b.setAttribute('aria-checked', String(b.dataset.themeOpt === theme));
   });
@@ -756,11 +762,18 @@ els.installBtn.addEventListener('click', async () => {
 });
 
 // ---------- Arranque ----------
-// Activa el tema Cerditos una sola vez para quienes ya tenían otro tema guardado.
-if (!state.settings.pigIntro) {
-  state.settings.theme = 'pig';
-  state.settings.pigIntro = true;
+// v2 de temas: todo es rosa; los temas anteriores (azul, "pig") pasan a Rosa claro.
+if (state.settings.themeV !== 2) {
+  state.settings.theme = 'light';
+  state.settings.themeV = 2;
+  delete state.settings.pigIntro;
   saveSettings();
+  // Pasa los colores de la paleta anterior (azul, verde...) a la paleta rosa.
+  const toPink = (col) => (COLORS.includes(col) ? col : COLORS[Math.max(0, OLD_COLORS.indexOf(col)) % COLORS.length]);
+  state.library.forEach((p) => { p.color = toPink(p.color); });
+  state.active.forEach((t) => { t.color = toPink(t.color); });
+  saveLibrary();
+  saveActive();
 }
 applyTheme();
 // iOS ignora user-scalable=no: bloquear el gesto de pellizcar para que no haga zoom.
