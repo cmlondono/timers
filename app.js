@@ -2,7 +2,7 @@ import { TONES, unlockAudio, previewTone, startRing, stopRing, setVolume } from 
 
 const COLORS = ['#3b82f6', '#14b8a6', '#22c55e', '#f59e0b', '#f97316', '#ef4444', '#ec4899', '#8b5cf6', '#64748b'];
 const QUICK = [30, 60, 120, 300, 600, 900, 1800, 3600];
-const DEFAULT_SETTINGS = { defaultTone: 'campana', volume: 0.8, vibrate: true, wakeLock: true };
+const DEFAULT_SETTINGS = { defaultTone: 'campana', volume: 0.8, vibrate: true, wakeLock: true, theme: 'auto' };
 const RING_MAX_MS = 5 * 60 * 1000; // la alarma deja de sonar sola tras 5 min
 
 // ---------- Persistencia ----------
@@ -495,7 +495,7 @@ $('#startForm').addEventListener('submit', (e) => {
 let editing = null;
 let draftTone = state.settings.defaultTone;
 let draftColor = COLORS[0];
-const presetDur = durationField($('#presetDuration'), () => setError('#fieldDuration', ''));
+const presetDur = durationField($('#presetDuration'), (sec) => { setError('#fieldDuration', ''); syncChips(sec); });
 
 $('#presetChips').innerHTML = QUICK.map((s) => `<button type="button" class="chip" data-sec="${s}">${humanDuration(s)}</button>`).join('');
 $('#presetChips').addEventListener('click', (e) => {
@@ -503,7 +503,14 @@ $('#presetChips').addEventListener('click', (e) => {
   if (!chip) return;
   presetDur.set(Number(chip.dataset.sec));
   setError('#fieldDuration', '');
+  syncChips(presetDur.get());
 });
+
+function syncChips(sec) {
+  $('#presetChips').querySelectorAll('[data-sec]').forEach((c) => {
+    c.setAttribute('aria-pressed', String(Number(c.dataset.sec) === sec));
+  });
+}
 
 function setError(fieldSel, msg) {
   const field = $(fieldSel);
@@ -545,6 +552,7 @@ function openPreset(p = null) {
   $('#presetTitle').textContent = p ? 'Editar timer' : 'Nuevo timer';
   els.presetName.value = p ? p.name : '';
   presetDur.set(p ? p.duration : 300);
+  syncChips(presetDur.get());
   draftTone = p ? p.tone : state.settings.defaultTone;
   draftColor = p ? p.color : COLORS[state.library.length % COLORS.length];
   setError('#fieldName', '');
@@ -614,6 +622,28 @@ function renderNotif() {
   status.textContent = perm === 'granted' ? 'Activadas' : perm === 'denied' ? 'Bloqueadas en el navegador' : 'Desactivadas';
   notifBtn.hidden = perm !== 'default';
 }
+
+function applyTheme() {
+  const theme = state.settings.theme;
+  const root = document.documentElement;
+  if (theme === 'auto') delete root.dataset.theme;
+  else root.dataset.theme = theme;
+  const dark = theme === 'dark' || (theme === 'auto' && darkQuery.matches);
+  $('meta[name="theme-color"]').content = dark ? '#0c0e13' : '#f3f4f7';
+  document.querySelectorAll('[data-theme-opt]').forEach((b) => {
+    b.setAttribute('aria-checked', String(b.dataset.themeOpt === theme));
+  });
+}
+const darkQuery = matchMedia('(prefers-color-scheme: dark)');
+darkQuery.addEventListener('change', applyTheme);
+
+$('#themeSwitch').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-theme-opt]');
+  if (!b) return;
+  state.settings.theme = b.dataset.themeOpt;
+  saveSettings();
+  applyTheme();
+});
 
 function openSettings() {
   setTone.value = state.settings.defaultTone;
@@ -720,6 +750,9 @@ els.installBtn.addEventListener('click', async () => {
 });
 
 // ---------- Arranque ----------
+applyTheme();
+// iOS ignora user-scalable=no: bloquear el gesto de pellizcar para que no haga zoom.
+document.addEventListener('gesturestart', (e) => e.preventDefault());
 setVolume(state.settings.volume);
 ['pointerdown', 'keydown'].forEach((ev) => document.addEventListener(ev, unlockAudio, { passive: true }));
 document.addEventListener('visibilitychange', () => {

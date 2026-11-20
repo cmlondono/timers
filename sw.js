@@ -1,5 +1,5 @@
 // Service worker: deja la app disponible sin conexión y gestiona los clics en notificaciones.
-const CACHE = 'labtimer-v1';
+const CACHE = 'labtimer-v2';
 const ASSETS = [
   '/',
   '/index.html',

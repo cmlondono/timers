@@ -2,11 +2,20 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>LabTimer</title>
   <meta name="description" content="Biblioteca de temporizadores para laboratorio. Crea, guarda y ejecuta varios timers a la vez.">
-  <meta name="theme-color" content="#f3f4f7" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0c0e13" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f3f4f7">
+  <script>
+    // Aplica el tema guardado antes de pintar para evitar parpadeos.
+    (function () {
+      var theme = 'auto';
+      try { theme = (JSON.parse(localStorage.getItem('labtimer.settings')) || {}).theme || 'auto'; } catch (e) {}
+      var dark = theme === 'dark' || (theme === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (theme !== 'auto') document.documentElement.dataset.theme = theme;
+      document.querySelector('meta[name="theme-color"]').content = dark ? '#0c0e13' : '#f3f4f7';
+    })();
+  </script>
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -150,6 +159,15 @@
         <button type="button" class="icon-btn" data-close aria-label="Cerrar"></button>
       </header>
       <div class="sheet-body">
+        <div class="group">
+          <p class="group-title">Apariencia</p>
+          <div id="themeSwitch" class="segmented" role="radiogroup" aria-label="Tema">
+            <button type="button" role="radio" data-theme-opt="auto">Automático</button>
+            <button type="button" role="radio" data-theme-opt="light">Claro</button>
+            <button type="button" role="radio" data-theme-opt="dark">Oscuro</button>
+          </div>
+        </div>
+
         <div class="group">
           <p class="group-title">Sonido</p>
           <div class="row">
